@@ -153,7 +153,7 @@ function editUser(user) {
 // Delete User
 function deleteUser(userId) {
     fetch(path_to_backend + `/delete/${userId}`, {
-        method: 'DELETE';
+        method: 'DELETE',
           headers: {
       'Permissions-Policy': 'interest-cohort=()'
     }
