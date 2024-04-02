@@ -1,94 +1,9 @@
-// DOM elements
-const userForm = document.getElementById('userForm');
-const userList = document.getElementById('userList');
-userForm.dataset.mode = 'create';
-// Event listener for form submission
-userForm.addEventListener('submit', function(event) {
-    event.preventDefault(); // Prevent default form submission
-
-    const user = {
-        firstName: document.getElementById('firstName').value,
-        lastName: document.getElementById('lastName').value,
-        age: parseInt(document.getElementById('age').value),
-        occupation: document.getElementById('occupation').value
-    };
-
-    if (userForm.dataset.mode === 'create') {
-        // Create user
-        createUser(user);
-    } else if (userForm.dataset.mode === 'update') {
-        // Update user
-        const userId = userForm.dataset.userId;
-        updateUser(userId, user);
-    }
-
-    userForm.reset(); // Clear form fields
-});
-
-// Create User
-function createUser(user) {
-    fetch('https://project-poo.onrender.com/save', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(user)
-    })
-        .then(response => response.text())
-        .then(data => {
-            console.log('Response:', data);
-            // Refresh user list
-            getUsers();
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            // Handle any errors that occurred during the request
-        });
-}
-
-// Update User
-function updateUser(userId, user) {
-    fetch(`https://project-poo.onrender.com/update/${userId}`, {
-        method: 'PUT',
-        headers: {
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(user)
-    })
-        .then(response => response.text())
-        .then(data => {
-            console.log('Response:', data);
-            // Refresh user list
-            getUsers();
-            // Reset form to create mode
-            userForm.dataset.mode = 'create';
-            delete userForm.dataset.userId;
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            // Handle any errors that occurred during the request
-        });
-}
-// Delete User
-function deleteUser(userId) {
-    fetch(`https://project-poo.onrender.com/delete/${userId}`, {
-        method: 'DELETE'
-    })
-        .then(response => response.text())
-        .then(data => {
-            console.log('Response:', data);
-            // Refresh user list
-            getUsers();
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            // Handle any errors that occurred during the request
-        });
-}
+// users.js
+const path_to_backend = "http://localhost:8080";
 
 // Get Users
 function getUsers() {
-    fetch('https://project-poo.onrender.com/users')
+    fetch(path_to_backend + '/users')
         .then(response => response.json())
         .then(data => {
             console.log('Users:', data);
@@ -102,41 +17,171 @@ function getUsers() {
 
 // Display Users
 function displayUsers(users) {
+    const userList = document.getElementById('userList');
     userList.innerHTML = ''; // Clear user list
 
+    // Create table element
+    const table = document.createElement('table');
+    table.classList.add('user-table');
+
+    // Create table header row
+    const headerRow = document.createElement('tr');
+    const headers = ['First Name', 'Last Name', 'Age', 'Occupation', 'Actions'];
+
+    headers.forEach(headerText => {
+        const headerCell = document.createElement('th');
+        headerCell.textContent = headerText;
+        headerRow.appendChild(headerCell);
+    });
+
+    table.appendChild(headerRow);
+
+    // Create table rows for each user
     users.forEach(user => {
-        const listItem = document.createElement('li');
-        listItem.textContent = `${user.firstName} ${user.lastName} (Age: ${user.age}, Occupation: ${user.occupation})`;
+        const row = document.createElement('tr');
+
+        // Create table cells for user data
+        const firstNameCell = document.createElement('td');
+        firstNameCell.textContent = user.firstName;
+        row.appendChild(firstNameCell);
+
+        const lastNameCell = document.createElement('td');
+        lastNameCell.textContent = user.lastName;
+        row.appendChild(lastNameCell);
+
+        const ageCell = document.createElement('td');
+        ageCell.textContent = user.age;
+        row.appendChild(ageCell);
+
+        const occupationCell = document.createElement('td');
+        occupationCell.textContent = user.occupation;
+        row.appendChild(occupationCell);
+
+        // Create table cell for actions (edit and delete buttons)
+        const actionsCell = document.createElement('td');
 
         // Edit button
         const editButton = document.createElement('button');
         editButton.textContent = 'Edit';
-        editButton.addEventListener('click', function() {
+        editButton.classList.add('edit');
+        editButton.addEventListener('click', function () {
             editUser(user);
         });
-        listItem.appendChild(editButton);
+        actionsCell.appendChild(editButton);
 
         // Delete button
         const deleteButton = document.createElement('button');
         deleteButton.textContent = 'Delete';
-        deleteButton.addEventListener('click', function() {
+        deleteButton.addEventListener('click', function () {
             deleteUser(user.id);
         });
-        listItem.appendChild(deleteButton);
+        actionsCell.appendChild(deleteButton);
 
-        userList.appendChild(listItem);
+        row.appendChild(actionsCell);
+
+        table.appendChild(row);
     });
+
+    userList.appendChild(table);
+    
 }
+
+// Edit User
 function editUser(user) {
-    userForm.dataset.mode = 'update';
-    userForm.dataset.userId = user.id;
-    console.log(userForm.dataset.mode);
-    document.getElementById('firstName').value = user.firstName;
-    document.getElementById('lastName').value = user.lastName;
-    document.getElementById('age').value = user.age;
-    document.getElementById('occupation').value = user.occupation;
+    const userFormContainer = document.getElementById('updatingContainer');
+    userFormContainer.innerHTML = ''; // Clear user form container
+    const heading = document.createElement('h3');
+    heading.textContent = 'Update User';
+
+    const userForm = document.createElement('form');
+
+    // Create input fields for first name, last name, age, and occupation
+    const firstNameInput = document.createElement('input');
+    firstNameInput.type = 'text';
+    firstNameInput.value = user.firstName;
+    userForm.appendChild(firstNameInput);
+
+    const lastNameInput = document.createElement('input');
+    lastNameInput.type = 'text';
+    lastNameInput.value = user.lastName;
+    userForm.appendChild(lastNameInput);
+
+    const ageInput = document.createElement('input');
+    ageInput.type = 'number';
+    ageInput.value = String(user.age); // Convert to string
+    userForm.appendChild(ageInput);
+
+    const occupationInput = document.createElement('input');
+    occupationInput.type = 'text';
+    occupationInput.value = user.occupation;
+    userForm.appendChild(occupationInput);
+
+    // Create submit button
+    const submitButton = document.createElement('button');
+    submitButton.type = 'submit';
+    submitButton.textContent = 'Save';
+    userForm.appendChild(submitButton);
+
+    // Add event listener to handle form submission
+    userForm.addEventListener('submit', function (event) {
+        event.preventDefault(); // Prevent form submission
+
+        // Get updated values from form fields
+        const updatedUser = {
+            id: user.id,
+            firstName: firstNameInput.value,
+            lastName: lastNameInput.value,
+            age: ageInput.value,
+            occupation: occupationInput.value
+        };
+
+        // Call the updateUser function to update the user in the user list
+        updateUser(updatedUser);
+
+        // Clear the user form container
+        userFormContainer.innerHTML = '';
+    });
+
+    // Append the heading and user form to the user form container
+    userFormContainer.appendChild(heading);
+    userFormContainer.appendChild(userForm);
 }
 
+// Delete User
+function deleteUser(userId) {
+    fetch(path_to_backend + `/delete/${userId}`, {
+        method: 'DELETE'
+    })
+        .then(response => response.json())
+        .then(data => {
+            console.log('User deleted:', data);
+            getUsers(); // Refresh the user list after deletion
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            // Handle any errors that occurred during the request
+        });
+}
 
-    // Initial setup
-    getUsers();
+// Update User
+function updateUser(updatedUser) {
+    fetch(path_to_backend + `/update/${updatedUser.id}`, {
+        method: 'PUT',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(updatedUser)
+    })
+        .then(response => response.text())
+        .then(data => {
+            console.log('User updated:', data);
+            getUsers(); // Refresh the user list after update
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            // Handle any errors that occurred during the request
+        });
+}
+
+// Initial setup
+getUsers();
