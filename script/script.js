@@ -3,7 +3,10 @@ const path_to_backend = "http://localhost:8080";
 
 // Get Users
 function getUsers() {
-    fetch(path_to_backend + '/users')
+    fetch(path_to_backend + '/users', {
+    headers: {
+      'Permissions-Policy': 'interest-cohort=()'
+    }})
         .then(response => response.json())
         .then(data => {
             console.log('Users:', data);
@@ -150,7 +153,10 @@ function editUser(user) {
 // Delete User
 function deleteUser(userId) {
     fetch(path_to_backend + `/delete/${userId}`, {
-        method: 'DELETE'
+        method: 'DELETE';
+          headers: {
+      'Permissions-Policy': 'interest-cohort=()'
+    }
     })
         .then(response => response.text())
         .then(data => {
@@ -168,7 +174,8 @@ function updateUser(updatedUser) {
     fetch(path_to_backend + `/update/${updatedUser.id}`, {
         method: 'PUT',
         headers: {
-            'Content-Type': 'application/json'
+            'Content-Type': 'application/json','Permissions-Policy': 'interest-cohort=()'
+
         },
         body: JSON.stringify(updatedUser)
     })
