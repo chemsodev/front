@@ -152,7 +152,7 @@ function deleteUser(userId) {
     fetch(path_to_backend + `/delete/${userId}`, {
         method: 'DELETE'
     })
-        .then(response => response.json())
+        .then(response => response.text())
         .then(data => {
             console.log('User deleted:', data);
             getUsers(); // Refresh the user list after deletion
