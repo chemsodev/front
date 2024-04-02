@@ -22,7 +22,8 @@ function createUser(user) {
     fetch(path_to_backend + '/save', {
         method: 'POST',
         headers: {
-            'Content-Type': 'application/json'
+            'Content-Type': 'application/json',
+            'Permissions-Policy': 'interest-cohort=()'
         },
         body: JSON.stringify(user)
     })
